@@ -6,7 +6,7 @@ I'm a software engineer working on backend services and distributed data process
 
 On Verizon Data Mediation, I contribute to Go and Java services that ingest telecom files, process records, and deliver data to billing and analytics systems. My work spans Spring Boot REST APIs, Kafka consumers, Redis duplicate checks, and Oracle ingestion and reporting. I work on retries, bounded concurrency, database batching, and recovery from failed or backlogged processing.
 
-I also contribute to file lifecycle services and Jenkins, Docker, and Argo CD releases on Kubernetes and OpenShift. I use Python for testing and operational reprocessing, and OpenTelemetry metrics exported for Prometheus, Grafana, and Kibana for monitoring and investigation.
+I also contribute to file lifecycle services and Jenkins, Docker, and Argo CD releases on Kubernetes and OpenShift. I use Python for testing and operational reprocessing. For monitoring, I export application metrics with OpenTelemetry for Prometheus and use Grafana and Kibana to investigate failures and bottlenecks.
 
 ## Selected personal projects
 
