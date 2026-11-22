@@ -20,11 +20,11 @@ The local webhook demo exercises request creation, replay, failed delivery, retr
 
 ### [EchoStream](https://github.com/lalith-99/echostream)
 
-A Go and React chat application with REST APIs, WebSockets, PostgreSQL message history, Redis pub/sub, and JWT authentication.
+I built EchoStream, a Go and React chat app, to explore what happens when a send succeeds but the connection drops before the client sees the response. The API commits a message and its outbox entry together in PostgreSQL. A retry with the same key returns the saved message. WebSockets and Redis handle live updates, and the browser fetches missed messages by ID when it reconnects.
 
-The project separates saved message history from best-effort live delivery. Its documentation covers the local setup, message flow, and current limits around presence, authorization, and delivery across instances.
+I tested the recovery path with Redis stopped and two API instances running. In a separate local k6 run, 20 subscribers connected to one instance received all 10 messages sent through the other.
 
-[Local setup](https://github.com/lalith-99/echostream#quick-start) · [Architecture](https://github.com/lalith-99/echostream/blob/main/docs/ARCHITECTURE.md)
+[Run EchoStream](https://github.com/lalith-99/echostream#run-it) · [Recovery test](https://github.com/lalith-99/echostream/blob/main/scripts/recovery.mjs) · [Benchmark and results](https://github.com/lalith-99/echostream/blob/main/docs/benchmarks/README.md)
 
 ## Connect
 
