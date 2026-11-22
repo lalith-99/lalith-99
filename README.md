@@ -12,19 +12,19 @@ I work with SQL and Oracle, and with services deployed on Kubernetes and OpenShi
 
 ### [Nimbus](https://github.com/lalith-99/nimbus-app)
 
-A Go notification service with REST and gRPC APIs, PostgreSQL, Redis, background workers, retries, and dead-letter recovery. It includes email, SMS, and webhook integrations, an optional SQS path, and Terraform infrastructure definitions.
+I built a Go notification service with REST and gRPC APIs, Redis request deduplication, and PostgreSQL workers that retry failed sends. A worker used to sleep for five seconds after each batch of ten. Letting it keep polling while work was ready cut the median time to deliver a 200-webhook burst from **99.49 to 4.39 seconds** in matched local CI tests. A separate run delivered all 10,000 webhooks in 23.8 seconds, with zero missing or duplicate receipts.
 
-In a local webhook test, six simultaneous REST creates with one idempotency key produced one database row and one delivery. Six competing dead-letter retries produced one replacement. A [PostgreSQL regression test](https://github.com/lalith-99/nimbus-app/blob/848cdbc6ed7584433b066aa86c4a6c79ac3f1235/internal/db/claim_test.go) also verifies that an expired worker cannot overwrite a newer worker’s outcome.
+Indexing jobs by their next eligible time also kept workers from scanning rows they could not claim. On a local PostgreSQL queue with one million rows, eight workers claimed the 4,000 eligible jobs **7.6–7.7× faster** across two trial pairs.
 
-[Run the local demo](https://github.com/lalith-99/nimbus-app/blob/main/docs/LOCAL_DEMO.md) · [Architecture](https://github.com/lalith-99/nimbus-app/blob/main/docs/ARCHITECTURE.md) · [CI checks](https://github.com/lalith-99/nimbus-app/actions/workflows/ci.yml)
+[Webhook workload and results](https://github.com/lalith-99/nimbus-app/blob/bc5015e037da290a545961b3072ad31864bedbbd/docs/performance/webhook-load.md) · [Worker claim benchmark](https://github.com/lalith-99/nimbus-app/blob/64e8bf210878ef6658493710413326a5f4533468/docs/performance/worker-claims.md) · [Run Nimbus](https://github.com/lalith-99/nimbus-app/blob/main/docs/LOCAL_DEMO.md)
 
 ### [EchoStream](https://github.com/lalith-99/echostream)
 
-I built EchoStream, a Go and React chat app, to explore what happens when a send succeeds but the connection drops before the client sees the response. The API commits a message and its outbox entry together in PostgreSQL. A retry with the same key returns the saved message. WebSockets and Redis handle live updates, and the browser fetches missed messages by ID when it reconnects.
+I built a Go and React chat service that commits each message and its outbox entry together in PostgreSQL. Redis distributes live updates across gateways, and a reconnecting client fetches missed messages by ID.
 
-In a local k6 run, 20 subscribers connected to one instance each received all 10 messages sent through the other. In a [separate 24.2-second CI workload](https://github.com/lalith-99/echostream/actions/runs/45012421471), two senders committed 48 messages. A disconnected reader recovered all 16 it missed. The three readers finished with zero missing or duplicate messages.
+At 256 WebSocket connections, checking channel membership once per recipient was slowing down live delivery. I batched concurrent checks while keeping permissions fresh. In a matched two-gateway test on one CI runner, that cut membership queries **93.5%** and reduced the median of the trial p95 send-to-receipt times from **237 to 79 ms**. Each revision delivered all 516,096 expected reader-message pairs with zero duplicates.
 
-[Run EchoStream](https://github.com/lalith-99/echostream#run-it) · [Recovery test](https://github.com/lalith-99/echostream/blob/main/scripts/recovery.mjs) · [Benchmark and results](https://github.com/lalith-99/echostream/blob/main/docs/benchmarks/README.md)
+[Fan-out workload and results](https://github.com/lalith-99/echostream/blob/9ec7a7ff07f440813a5a406fe1e23939c32a7fdc/docs/benchmarks/fanout-load.md) · [Measured comparison](https://github.com/lalith-99/echostream/actions/runs/45034011449/job/137243619864) · [Run EchoStream](https://github.com/lalith-99/echostream#run-it)
 
 ## Connect
 
