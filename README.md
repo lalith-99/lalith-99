@@ -14,7 +14,7 @@ I work with SQL and Oracle, and with services deployed on Kubernetes and OpenShi
 
 A Go notification service with REST and gRPC APIs, PostgreSQL, Redis, background workers, retries, and dead-letter recovery. It includes email, SMS, and webhook integrations, an optional SQS path, and Terraform infrastructure definitions.
 
-The local webhook demo exercises request creation, replay, failed delivery, retries, and recovery. The architecture notes explain database claims, request deduplication, and the failure windows that can still produce duplicate sends.
+In a local webhook test, six simultaneous REST creates with one idempotency key produced one database row and one delivery. Six competing dead-letter retries produced one replacement. A [PostgreSQL regression test](https://github.com/lalith-99/nimbus-app/blob/848cdbc6ed7584433b066aa86c4a6c79ac3f1235/internal/db/claim_test.go) also verifies that an expired worker cannot overwrite a newer worker’s outcome.
 
 [Run the local demo](https://github.com/lalith-99/nimbus-app/blob/main/docs/LOCAL_DEMO.md) · [Architecture](https://github.com/lalith-99/nimbus-app/blob/main/docs/ARCHITECTURE.md) · [CI checks](https://github.com/lalith-99/nimbus-app/actions/workflows/ci.yml)
 
@@ -22,7 +22,7 @@ The local webhook demo exercises request creation, replay, failed delivery, retr
 
 I built EchoStream, a Go and React chat app, to explore what happens when a send succeeds but the connection drops before the client sees the response. The API commits a message and its outbox entry together in PostgreSQL. A retry with the same key returns the saved message. WebSockets and Redis handle live updates, and the browser fetches missed messages by ID when it reconnects.
 
-I tested the recovery path with Redis stopped and two API instances running. In a separate local k6 run, 20 subscribers connected to one instance received all 10 messages sent through the other.
+In a local k6 run, 20 subscribers connected to one instance each received all 10 messages sent through the other. In a [separate 24.2-second CI workload](https://github.com/lalith-99/echostream/actions/runs/45012421471), two senders committed 48 messages. A disconnected reader recovered all 16 it missed. The three readers finished with zero missing or duplicate messages.
 
 [Run EchoStream](https://github.com/lalith-99/echostream#run-it) · [Recovery test](https://github.com/lalith-99/echostream/blob/main/scripts/recovery.mjs) · [Benchmark and results](https://github.com/lalith-99/echostream/blob/main/docs/benchmarks/README.md)
 
